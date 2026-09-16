@@ -39,7 +39,7 @@ import dockfleet.health.models as models
 
 # Check if dockfleet.db was created on disk
 assert not cwd_db.exists(), "dockfleet.db was created on module import!"
-assert not (models.PROJECT_ROOT / "dockfleet.db").exists() or not os.path.exists("dockfleet.db")
+assert not (models.PROJECT_ROOT / "dockfleet.db").exists(), "dockfleet.db was created on module import!"
 
 # Inspecting classes must also not trigger engine creation
 _ = models.Service
