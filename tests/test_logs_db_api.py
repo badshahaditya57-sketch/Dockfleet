@@ -61,7 +61,7 @@ def test_ingest_docker_logs_once_initial_and_incremental(monkeypatch):
     from unittest.mock import MagicMock, patch
     from dockfleet.health.log_ingestor import ingest_docker_logs_once
 
-    with Session(engine) as session:
+    with get_session() as session:
         svc = Service(
             name="api",
             image="dummy-image",
@@ -88,7 +88,7 @@ def test_ingest_docker_logs_once_initial_and_incremental(monkeypatch):
         # 1. Initial ingest (no prior logs) -> should use --tail
         ingest_docker_logs_once(tail=200)
 
-        with Session(engine) as session:
+        with get_session() as session:
             rows = session.exec(select(LogEvent).where(LogEvent.service_name == "api")).all()
             assert len(rows) == 2
             messages = [r.message for r in rows]
@@ -101,7 +101,7 @@ def test_ingest_docker_logs_once_initial_and_incremental(monkeypatch):
         # 2. Subsequent ingest -> should use --since with latest_ts isoformat
         ingest_docker_logs_once(tail=200)
 
-        with Session(engine) as session:
+        with get_session() as session:
             rows = session.exec(select(LogEvent).where(LogEvent.service_name == "api").order_by(LogEvent.created_at)).all()
             assert len(rows) == 3
             messages = [r.message for r in rows]

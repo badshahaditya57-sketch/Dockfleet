@@ -17,7 +17,7 @@ def test_mark_service_running_and_stopped(tmp_path):
 
     # 1) Fresh DB schema
     init_db()
-    with Session(engine) as session:
+    with get_session() as session:
         for s in session.exec(select(Service)).all():
             session.delete(s)
         session.commit()

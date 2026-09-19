@@ -158,6 +158,7 @@ class HealthScheduler:
                             select(Service).where(Service.name == name)
                         ).one_or_none()
 
+
                     if svc_db is not None and svc_db.status in (
                         ContainerStatus.STOPPED,
                         ContainerStatus.STOPPED.value,

@@ -35,7 +35,7 @@ def engine_fixture():
 @pytest.fixture(name="session")
 def session_fixture(engine):
     """Provide a session backed by the in-memory engine."""
-    with Session(engine) as session:
+    with get_session(engine=engine) as session:
         yield session
 
 

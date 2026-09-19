@@ -128,7 +128,7 @@ def test_scheduler_skips_stopped_service():
     config_path = "examples/dockfleet.yaml"
     config: DockFleetConfig = load_config(config_path)
 
-    with Session(engine) as session:
+    with get_session() as session:
         seed_services(config, session)
         for s in session.exec(select(Service)).all():
             s.status = ContainerStatus.STOPPED
@@ -162,7 +162,7 @@ def test_scheduler_skips_stopped_service():
 
     assert len(called) == 0
 
-    with Session(engine) as session:
+    with get_session() as session:
         for s in session.exec(select(Service)).all():
             assert s.status == ContainerStatus.STOPPED
             assert s.consecutive_failures == 0

@@ -136,7 +136,7 @@ def test_needs_restart_false_when_service_stopped() -> None:
         health_status=HealthStatus.CRASHED,
         consecutive_failures=5,
     )
-    with Session(engine) as session:
+    with get_session() as session:
         session.add(svc)
         session.commit()
 
