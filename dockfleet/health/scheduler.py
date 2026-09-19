@@ -157,32 +157,33 @@ class HealthScheduler:
                     future = executor.submit(self._run_single_check, name, hc)
                     futures[future] = name
 
-            # Process results sequentially to avoid SQLite locking issues
-            for future, name in futures.items():
-                try:
-                    ok = future.result()
-                    status_str = "HEALTHY" if ok else "UNHEALTHY"
-                    self._logger.info("HealthScheduler: %s -> %s", name, status_str)
+                # Process results sequentially to avoid SQLite locking issues
+                for future in concurrent.futures.as_completed(futures):
+                    name = futures[future]
+                    try:
+                        ok = future.result()
+                        status_str = "HEALTHY" if ok else "UNHEALTHY"
+                        self._logger.info("HealthScheduler: %s -> %s", name, status_str)
 
-                    if ok:
-                        self._restart_attempts.pop(name, None)
-                        self._next_restart_at.pop(name, None)
+                        if ok:
+                            self._restart_attempts.pop(name, None)
+                            self._next_restart_at.pop(name, None)
 
-                    update_service_health(
-                        name,
-                        ok,
-                        reason=None if ok else "health check failed",
-                    )
+                        update_service_health(
+                            name,
+                            ok,
+                            reason=None if ok else "health check failed",
+                        )
 
-                    # after DB update, decide & trigger restart if needed
-                    self._handle_post_health(name)
-                except Exception as exc:  # noqa: BLE001 # pragma: no cover (defensive)
-                    # Defensive guard: one bad service should not kill scheduler
-                    self._logger.error(
-                        "HealthScheduler: error while polling %s: %s",
-                        name,
-                        exc,
-                    )
+                        # after DB update, decide & trigger restart if needed
+                        self._handle_post_health(name)
+                    except Exception as exc:  # noqa: BLE001 # pragma: no cover (defensive)
+                        # Defensive guard: one bad service should not kill scheduler
+                        self._logger.error(
+                            "HealthScheduler: error while polling %s: %s",
+                            name,
+                            exc,
+                        )
 
             time.sleep(self.interval_seconds)
 

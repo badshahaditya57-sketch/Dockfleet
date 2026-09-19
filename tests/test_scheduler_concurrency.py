@@ -9,16 +9,19 @@ from dockfleet.health.services import seed_services
 
 
 class SlowFakeChecker:
+    def __init__(self):
+        self._real_sleep = time.sleep
+
     def check_http(self, endpoint: str, timeout: float = 3.0) -> bool:
-        time.sleep(1.0)
+        self._real_sleep(1.0)
         return True
 
     def check_tcp(self, host: str, port: int, timeout: float = 3.0) -> bool:
-        time.sleep(1.0)
+        self._real_sleep(1.0)
         return True
 
     def check_process(self, container_name: str) -> bool:
-        time.sleep(1.0)
+        self._real_sleep(1.0)
         return True
 
 def test_scheduler_runs_concurrently(monkeypatch):
