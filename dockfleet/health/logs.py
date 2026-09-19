@@ -56,9 +56,10 @@ def store_log_line(
             svc = session.exec(
                 select(Service).where(Service.name == service_name)
             ).one_or_none()
-            _SERVICE_ID_CACHE[service_name] = svc.id if svc else None
+            if svc is not None:
+                _SERVICE_ID_CACHE[service_name] = svc.id
 
-    service_id = _SERVICE_ID_CACHE[service_name]
+    service_id = _SERVICE_ID_CACHE.get(service_name)
     if service_id is None:
         print(f"[logs] Service '{service_name}' not found in DB, skipping log")
         return
