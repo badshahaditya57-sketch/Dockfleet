@@ -358,13 +358,23 @@ class HealthScheduler:
         # Run one health check based on its type and return True/False.
         hc_type = hc.type.lower()
 
+        if hc_type in {"http", "tcp"} and hc.endpoint is None:
+            self._logger.warning(
+                "HealthScheduler: missing %s endpoint for %s",
+                hc_type,
+                name,
+            )
+            return False
+
         if hc_type == "http":
+            assert hc.endpoint is not None
             # Expect endpoint like "http://localhost:8000/health"
-            return self._checker.check_http(hc.endpoint)  # type: ignore[arg-type]
+            return self._checker.check_http(hc.endpoint)
 
         if hc_type == "tcp":
+            assert hc.endpoint is not None
             # Expect endpoint like "localhost:8000"
-            host, port = self._split_host_port(hc.endpoint)  # type: ignore[arg-type]
+            host, port = self._split_host_port(hc.endpoint)
             if host is None or port is None:
                 self._logger.warning(
                     "HealthScheduler: invalid TCP endpoint for %s: %s",
