@@ -48,7 +48,7 @@ write: "Not applicable" and explain why.
 
 ## Testing
 
-<!-- Describe how you tested the changes. Include commands where applicable. -->
+<!-- Describe how you tested the changes. Include commands and their results (pass/fail) where applicable. -->
 
 ```bash
 # Example commands:
