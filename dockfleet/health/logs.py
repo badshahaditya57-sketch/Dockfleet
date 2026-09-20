@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from sqlmodel import func, select
 
-from .models import LogEvent, Service, get_session
+from .models import LogEvent, Service, get_engine, get_session
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ def _format_created_at(value: datetime | str | None) -> str:
     return str(value)
 
 
-_SERVICE_ID_CACHE: dict[str, int | None] = {}
+_SERVICE_ID_CACHE: dict[str, dict[str, int]] = {}
 
 def store_log_line(
     service_name: str,
@@ -51,15 +51,19 @@ def store_log_line(
     - Skips insert (with a warning) if the service is not present in the DB.
     - Persists created_at as a timezone-aware datetime instance (UTC).
     """
-    if service_name not in _SERVICE_ID_CACHE:
+    db_url = str(get_engine().url)
+    cache = _SERVICE_ID_CACHE.setdefault(db_url, {})
+
+    if service_name not in cache:
         with get_session() as session:
             svc = session.exec(
                 select(Service).where(Service.name == service_name)
             ).one_or_none()
             if svc is not None:
-                _SERVICE_ID_CACHE[service_name] = svc.id
+                assert svc.id is not None
+                cache[service_name] = svc.id
 
-    service_id = _SERVICE_ID_CACHE.get(service_name)
+    service_id = cache.get(service_name)
     if service_id is None:
         print(f"[logs] Service '{service_name}' not found in DB, skipping log")
         return
