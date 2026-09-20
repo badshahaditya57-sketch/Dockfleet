@@ -129,3 +129,49 @@ def test_cli_down_stops_scheduler(mock_down, mock_stop_scheduler):
     mock_down.assert_called_once()
     mock_stop_scheduler.assert_called_once()
 
+
+@patch("dockfleet.cli.main.subprocess.run")
+def test_cli_logs_missing_container_follow(mock_run):
+    """Test that dockfleet logs --follow outputs error and exits 1 when container is missing."""
+    from unittest.mock import MagicMock
+
+    mock_run.return_value = MagicMock(returncode=1, stderr="Error: No such container: dockfleet_invalid_service\n")
+    result = runner.invoke(app, ["logs", "invalid_service", "--follow"])
+    assert result.exit_code == 1
+    assert "Service 'invalid_service' not found or container not running." in result.stdout
+    assert "Streaming logs" not in result.stdout
+
+
+@patch("dockfleet.cli.main.subprocess.run")
+def test_cli_logs_missing_container_no_follow(mock_run):
+    """Test that dockfleet logs outputs error and exits 1 when container is missing."""
+    from unittest.mock import MagicMock
+
+    mock_run.return_value = MagicMock(returncode=1, stderr="Error: No such container: dockfleet_invalid_service\n")
+    result = runner.invoke(app, ["logs", "invalid_service"])
+    assert result.exit_code == 1
+    assert "Service 'invalid_service' not found or container not running." in result.stdout
+
+
+@patch("dockfleet.cli.main.subprocess.run")
+def test_cli_logs_success_follow(mock_run):
+    """Test that dockfleet logs --follow streams logs when container exists."""
+    from unittest.mock import MagicMock
+
+    mock_run.return_value = MagicMock(returncode=0, stdout="")
+    result = runner.invoke(app, ["logs", "web", "--follow"])
+    assert result.exit_code == 0
+    assert "Streaming logs for web" in result.stdout
+
+
+@patch("dockfleet.cli.main.subprocess.run")
+def test_cli_logs_success_no_follow(mock_run):
+    """Test that dockfleet logs outputs logs when container exists."""
+    from unittest.mock import MagicMock
+
+    mock_run.return_value = MagicMock(returncode=0, stdout="Application started successfully\n")
+    result = runner.invoke(app, ["logs", "web"])
+    assert result.exit_code == 0
+    assert "Application started successfully" in result.stdout
+
+
