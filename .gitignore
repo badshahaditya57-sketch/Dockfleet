@@ -38,3 +38,18 @@ htmlcov/
 
 # Python packaging / build artifacts
 dockfleet.egg-info/
+
+# ---- Build & Distribution ----
+build/
+dist/
+*.egg-info/
+*.whl
+*.tar.gz
+
+# ---- Modern Linters & Type Checkers ----
+.mypy_cache/
+.ruff_cache/
+.tox/
+
+# ---- Jupyter & Data Science ----
+.ipynb_checkpoints/
